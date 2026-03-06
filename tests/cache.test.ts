@@ -197,8 +197,8 @@ describe("FREE_TIER_DAILY_LIMIT", () => {
     expect(Number.isInteger(FREE_TIER_DAILY_LIMIT)).toBe(true);
   });
 
-  it("equals 5", () => {
-    expect(FREE_TIER_DAILY_LIMIT).toBe(5);
+  it("equals 200", () => {
+    expect(FREE_TIER_DAILY_LIMIT).toBe(200);
   });
 });
 

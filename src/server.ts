@@ -31,6 +31,14 @@ const SERVER_NAME = "newsletter-commerce-intelligence";
 const SERVER_VERSION = "0.1.0";
 const TOOL_PRICE_USD = 0.001;
 
+// Input size limits (FIND-4 — prevent oversized payloads reaching OpenAI)
+export const CONTENT_MAX_CHARS = 200_000; // ~50k words + HTML markup, covers any real newsletter
+export const ID_MAX_CHARS = 200;
+export const API_KEY_MAX_CHARS = 200;
+export const CATEGORY_FILTER_ITEM_MAX = 50;
+export const CATEGORY_FILTER_ARRAY_MAX = 20;
+export const NEWSLETTER_IDS_ARRAY_MAX = 20;
+
 // ============================================================================
 // AUTH
 // ============================================================================
@@ -86,7 +94,7 @@ function authorize(agentId: string, apiKey?: string): AuthResult {
   const used = cache.getFreeTierUsed(agentId);
   return {
     authorized: false,
-    reason: `Free tier exhausted (${used}/${FREE_TIER_DAILY_LIMIT} calls used today). Set MCP_API_KEYS to continue.`,
+    reason: `Free tier exhausted (${used}/${FREE_TIER_DAILY_LIMIT} calls used today). To continue, set MCP_API_KEYS=your-key in your MCP config, or contact team@sincetoday.com for an API key.`,
   };
 }
 
@@ -134,24 +142,28 @@ export function createServer(): McpServer {
 
   server.tool(
     "extract_newsletter_products",
-    "Extract product mentions, recommendations, and affiliate links from a newsletter. Supports HTML (Substack, Ghost, Beehiiv) and plain text. Returns product names, categories, recommendation strength, affiliate links, and whether each product appears in a sponsored section.",
+    "Extract affiliate links, product recommendations, and sponsored mentions from a newsletter issue. Supports HTML from Substack, Ghost, and Beehiiv plus plain text. Returns product name, category (saas, supplement, book, course, physical_goods), affiliate link URL, recommendation strength, and sponsor flag. Use for newsletter monetization analysis, affiliate program auditing, and cross-issue product tracking. Caches results by newsletter_id.",
     {
       content: z
         .string()
         .min(1)
+        .max(CONTENT_MAX_CHARS)
         .describe("Newsletter content as HTML or plain text"),
       newsletter_id: z
         .string()
+        .max(ID_MAX_CHARS)
         .optional()
         .describe("Optional newsletter issue identifier for caching and trend tracking"),
       category_filter: z
-        .array(z.string())
+        .array(z.string().max(CATEGORY_FILTER_ITEM_MAX))
+        .max(CATEGORY_FILTER_ARRAY_MAX)
         .optional()
         .describe(
           "Optional list of categories to include: saas, physical_goods, course, supplement, book, service, media, other"
         ),
       api_key: z
         .string()
+        .max(API_KEY_MAX_CHARS)
         .optional()
         .describe("Optional API key for paid access beyond the free tier"),
     },
@@ -241,18 +253,21 @@ export function createServer(): McpServer {
 
   server.tool(
     "analyze_newsletter_sponsors",
-    "Identify sponsored sections in a newsletter, estimate CPM value, and score sponsor-reader fit. Returns each sponsor with estimated read-through rate and fit score. Uses cached extraction if newsletter_id was previously processed.",
+    "Identify sponsored sections in a newsletter and estimate advertising value: CPM, read-through rate, and sponsor-reader fit score. Returns each sponsor's name, placement type (dedicated section, inline, footer), estimated CPM, and audience fit score. Use for newsletter advertising intelligence, sponsor acquisition research, and ad placement optimization. Reuses cached extraction when newsletter_id matches a prior extract_newsletter_products call.",
     {
       content: z
         .string()
         .min(1)
+        .max(CONTENT_MAX_CHARS)
         .describe("Newsletter content as HTML or plain text"),
       newsletter_id: z
         .string()
+        .max(ID_MAX_CHARS)
         .optional()
         .describe("Optional newsletter issue identifier — uses cached extraction if available"),
       api_key: z
         .string()
+        .max(API_KEY_MAX_CHARS)
         .optional()
         .describe("Optional API key for paid access beyond the free tier"),
     },
@@ -329,20 +344,23 @@ export function createServer(): McpServer {
 
   server.tool(
     "track_product_trends",
-    "Compare product mentions across multiple newsletter issues to identify rising, stable, and falling product trends. Requires issues to have been previously extracted (via extract_newsletter_products) and cached by newsletter_id.",
+    "Compare affiliate product mentions and brand frequency across multiple newsletter issues to detect rising, stable, and declining trends. Returns trend velocity, mention count per issue, and category breakdown. Use for newsletter affiliate marketing optimization, editorial product tracking, and sponsor category trends. Requires prior extract_newsletter_products calls for each newsletter_id.",
     {
       newsletter_ids: z
-        .array(z.string())
+        .array(z.string().max(ID_MAX_CHARS))
         .min(1)
+        .max(NEWSLETTER_IDS_ARRAY_MAX)
         .describe(
           "List of newsletter issue IDs to analyze. Each must have been previously extracted via extract_newsletter_products."
         ),
       category_filter: z
-        .array(z.string())
+        .array(z.string().max(CATEGORY_FILTER_ITEM_MAX))
+        .max(CATEGORY_FILTER_ARRAY_MAX)
         .optional()
         .describe("Optional category filter to narrow trend analysis"),
       api_key: z
         .string()
+        .max(API_KEY_MAX_CHARS)
         .optional()
         .describe("Optional API key for paid access beyond the free tier"),
     },
