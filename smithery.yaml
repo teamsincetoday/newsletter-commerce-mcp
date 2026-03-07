@@ -1,0 +1,70 @@
+# Smithery listing for newsletter-commerce-mcp
+# Place this as smithery.yaml in the package root before publishing to Smithery
+# GitHub repo: create with `gh repo create teamsincetoday/newsletter-commerce-mcp --public`
+# Update github link below once repo is live.
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - openaiApiKey
+    properties:
+      openaiApiKey:
+        type: string
+        description: OpenAI API key for GPT-4o-mini product and sponsor extraction
+      apiKeys:
+        type: string
+        description: Comma-separated paid API keys (unlocks unlimited calls)
+      cacheDir:
+        type: string
+        description: SQLite cache path (default ./data/cache.db)
+  commandFunction: |-
+    (config) => ({
+      command: "npx",
+      args: ["newsletter-commerce-mcp"],
+      env: {
+        OPENAI_API_KEY: config.openaiApiKey,
+        MCP_API_KEYS: config.apiKeys ?? "",
+        CACHE_DIR: config.cacheDir ?? "./data/cache.db",
+      }
+    })
+
+# --- Smithery Marketplace Metadata ---
+# (These fields are configured via the Smithery web UI, not this file)
+# name: newsletter-commerce-mcp
+# display_name: Newsletter Commerce Intelligence
+# tagline: Extract product mentions, sponsors, and affiliate signals from newsletters
+# description: |
+#   Give it a Substack, Ghost, or Beehiiv newsletter URL — or raw text.
+#   It extracts every commercially interesting product, sponsor, and brand mention
+#   with affiliate network match and pricing context.
+#
+#   3 MCP tools for newsletter commerce intelligence:
+#   - extract_products: Full product and brand extraction with affiliate network match
+#     (Amazon Associates, ShareASale, Awin), pricing mentions, and brand frequency signals
+#   - analyze_newsletter: Full advertising intelligence report — sponsors, pricing cadence,
+#     affiliate link patterns, and content gap signals from Substack/Ghost/Beehiiv
+#   - track_product_trends: Compare product mention frequency across newsletter issues to
+#     identify trending brands in a newsletter's product ecosystem
+#
+#   First-mover in newsletter commerce intelligence for MCP.
+#   Compatible with Cursor Automations and GitHub Agentic Workflows.
+#
+#   Free tier: 200 extracts/day. Paid: $0.001/call with API key.
+#
+# categories:
+#   - commerce
+#   - newsletter-intelligence
+#   - content-extraction
+#   - affiliate-marketing
+#
+# pricing:
+#   model: freemium
+#   free_tier: 200 calls/day per agent
+#   paid_tier: $0.001 per call (API key auth)
+#
+# links:
+#   npm: https://www.npmjs.com/package/newsletter-commerce-mcp
+#   github: https://github.com/teamsincetoday/newsletter-commerce-mcp
+#   homepage: https://sincetoday.com
