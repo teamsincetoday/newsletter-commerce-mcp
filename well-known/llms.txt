@@ -1,0 +1,32 @@
+# newsletter-commerce-mcp
+
+MCP server for newsletter commerce intelligence. Extracts affiliate products, sponsor sections, and brand recommendations from newsletter issues (HTML or plain text).
+
+## Tools
+
+### extract_newsletter_products
+- Input: newsletter content as HTML or plain text (up to 200,000 chars), optional newsletter_id for caching, optional category_filter
+- Output: products array [{name, category, mention_context, recommendation_strength, affiliate_link, confidence, is_sponsored}], sponsor_sections array, _meta
+- Typical output: 300-600 tokens
+- Latency: 2-4 seconds (OpenAI GPT-4o-mini)
+- Price: free for first 200 calls/day, $0.001/call with API key
+- Supports: Substack HTML, Ghost HTML, Beehiiv HTML, plain text
+
+### analyze_newsletter_sponsors
+- Input: newsletter content; reuses cache if newsletter_id matches prior extraction
+- Output: sponsors array [{sponsor_name, section_context, estimated_cpm_usd, estimated_read_through, call_to_action, sponsor_fit_score}], sponsor_count, avg_read_through, estimated_total_cpm_usd
+- Typical output: 150-350 tokens
+- Latency: 2-4 seconds (or <100ms if cache hit)
+
+### track_product_trends
+- Input: newsletter_ids (list of previously extracted issue IDs), optional category_filter
+- Output: trends array [{name, category, trend (rising|stable|falling), issues_present, total_mentions}]
+- Typical output: 200-400 tokens
+- Latency: <100ms (local computation, no OpenAI call)
+- Requires: prior extract_newsletter_products calls for each newsletter_id
+
+## Categories
+saas, physical_goods, course, supplement, book, service, media, other
+
+## Auth
+Set MCP_API_KEYS=your-key in your MCP config for paid access. Free tier: 200 calls/day, no key required.
