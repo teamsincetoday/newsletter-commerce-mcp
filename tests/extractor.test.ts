@@ -238,7 +238,7 @@ describe("normalizeProducts", () => {
     expect(result[1]?.name).toBe("LowConf");
   });
 
-  it("truncates mention_context to 200 characters", () => {
+  it("truncates mention_context to 100 characters", () => {
     const longContext = "x".repeat(300);
     const result = normalizeProducts([
       {
@@ -251,7 +251,7 @@ describe("normalizeProducts", () => {
         is_sponsored: false,
       },
     ]);
-    expect(result[0]?.mention_context.length).toBe(200);
+    expect(result[0]?.mention_context.length).toBe(100);
   });
 });
 
@@ -319,7 +319,7 @@ describe("normalizeSponsorSections", () => {
     expect(result[0]?.sponsor_fit_score).toBe(0);
   });
 
-  it("truncates section_context to 150 characters", () => {
+  it("truncates section_context to 75 characters", () => {
     const result = normalizeSponsorSections([
       {
         sponsor_name: "Sponsor",
@@ -330,7 +330,7 @@ describe("normalizeSponsorSections", () => {
         sponsor_fit_score: 0.5,
       },
     ]);
-    expect(result[0]?.section_context.length).toBe(150);
+    expect(result[0]?.section_context.length).toBe(75);
   });
 });
 

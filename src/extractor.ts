@@ -122,7 +122,7 @@ Extract all product, brand, and service mentions from the provided newsletter co
 For each product/brand mention:
 - name: Exact product or brand name (string)
 - category: One of exactly: saas, physical_goods, course, supplement, book, service, media, other
-- mention_context: Exact sentence or phrase containing the mention (max 200 chars)
+- mention_context: Exact sentence or phrase containing the mention (max 100 chars)
 - recommendation_strength: "strong" (must-have/buy now), "endorsed" (I use and recommend), "mentioned" (neutral reference), "organic" (naturally mentioned without sales intent)
 - affiliate_link: Any affiliate or referral URL (containing utm_source, /ref/, /go/, promo codes), or null
 - confidence: 0.0-1.0 — how confident this is a genuine product/brand mention
@@ -134,7 +134,7 @@ Sponsor markers to detect:
 
 Also identify sponsor sections:
 - sponsor_name: Sponsor's brand name
-- section_context: Opening phrase of the sponsor block (max 150 chars)
+- section_context: Opening phrase of the sponsor block (max 75 chars)
 - estimated_cpm_usd: Estimated CPM value in USD (typical newsletter CPMs: $20-$80)
 - estimated_read_through: 0.0-1.0 (0=skippable ad, 1=highly engaging native content)
 - call_to_action: URL, promo code, or CTA text, or null
@@ -201,7 +201,7 @@ export function normalizeProducts(
       productMap.set(key, {
         name,
         category,
-        mention_context: (p.mention_context ?? "").slice(0, 200),
+        mention_context: (p.mention_context ?? "").slice(0, 100),
         recommendation_strength: strength,
         affiliate_link: p.affiliate_link ?? null,
         confidence,
@@ -224,7 +224,7 @@ export function normalizeSponsorSections(
     .filter(s => (s.sponsor_name ?? "").trim() !== "")
     .map(s => ({
       sponsor_name: s.sponsor_name.trim(),
-      section_context: (s.section_context ?? "").slice(0, 150),
+      section_context: (s.section_context ?? "").slice(0, 75),
       estimated_cpm_usd: Math.max(Number(s.estimated_cpm_usd) || 0, 0),
       estimated_read_through: Math.min(
         Math.max(Number(s.estimated_read_through) || 0, 0),
