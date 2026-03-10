@@ -517,6 +517,75 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
 }
 
 // ============================================================================
+// DISCOVERY CONTENT (agent-readable examples + LLM tool docs)
+// ============================================================================
+
+const LLMS_TXT = `# newsletter-commerce-mcp
+
+MCP server for newsletter commerce intelligence. Extracts affiliate products, sponsor sections, and brand recommendations from newsletter issues (HTML or plain text).
+
+## Tools
+
+### extract_newsletter_products
+- Input: newsletter content as HTML or plain text (up to 200,000 chars), optional newsletter_id for caching, optional category_filter
+- Output: products array [{name, category, mention_context, recommendation_strength, affiliate_link, confidence, is_sponsored}], sponsor_sections array, _meta
+- Typical output: 300-600 tokens
+- Latency: 2-4 seconds (OpenAI GPT-4o-mini)
+- Price: free for first 200 calls/day, $0.001/call with API key
+- Supports: Substack HTML, Ghost HTML, Beehiiv HTML, plain text
+
+### analyze_newsletter_sponsors
+- Input: newsletter content; reuses cache if newsletter_id matches prior extraction
+- Output: sponsors array [{sponsor_name, section_context, estimated_cpm_usd, estimated_read_through, call_to_action, sponsor_fit_score}], sponsor_count, avg_read_through, estimated_total_cpm_usd
+- Typical output: 150-350 tokens
+- Latency: 2-4 seconds (or <100ms if cache hit)
+
+### track_product_trends
+- Input: newsletter_ids (list of previously extracted issue IDs), optional category_filter
+- Output: trends array [{name, category, trend (rising|stable|falling), issues_present, total_mentions}]
+- Typical output: 200-400 tokens
+- Latency: <100ms (local computation, no OpenAI call)
+- Requires: prior extract_newsletter_products calls for each newsletter_id
+
+## Categories
+saas, physical_goods, course, supplement, book, service, media, other
+
+## Auth
+Set MCP_API_KEYS=your-key in your MCP config for paid access. Free tier: 200 calls/day, no key required.`;
+
+function getExamplesResponse() {
+  return {
+    mcp: "newsletter-commerce-mcp",
+    version: SERVER_VERSION,
+    examples: [
+      {
+        tool: "extract_newsletter_products",
+        description: "Extract product mentions, recommendations, and affiliate links from a newsletter. Supports HTML (Substack, Ghost, Beehiiv) and plain text. Returns product names, categories, recommendation strength, affiliate links, and whether each product appears in a sponsored section.",
+        input: {
+          content: "**This week's tools** — I've been running my entire writing workflow through Notion AI for three months now. Genuinely the best $10/month I spend... [SPONSOR] Today's issue is brought to you by Beehiiv — the newsletter platform built for growth. Start free at beehiiv.com/growth... Back to tools: I finally switched to Linear for project management. No affiliate link, just a real recommendation. The Kanban view alone is worth it...",
+          newsletter_id: "swipe-file-issue-47",
+          format: "markdown",
+        },
+        output: {
+          newsletter_id: "swipe-file-issue-47",
+          products: [
+            { name: "Notion AI", category: "saas", mention_context: "running my entire writing workflow through Notion AI for three months now. Genuinely the best $10/month", recommendation_strength: "strong", affiliate_link: null, confidence: 0.94, is_sponsored: false },
+            { name: "Beehiiv", category: "saas", mention_context: "newsletter platform built for growth. Start free at beehiiv.com/growth", recommendation_strength: "endorsed", affiliate_link: "beehiiv.com/growth", confidence: 0.99, is_sponsored: true },
+            { name: "Linear", category: "saas", mention_context: "switched to Linear for project management. No affiliate link, just a real recommendation. The Kanban view alone is worth it", recommendation_strength: "strong", affiliate_link: null, confidence: 0.96, is_sponsored: false },
+          ],
+          sponsor_sections: [
+            { sponsor_name: "Beehiiv", section_context: "Today's issue is brought to you by Beehiiv", estimated_cpm_usd: 35, estimated_read_through: 0.61, call_to_action: "beehiiv.com/growth", sponsor_fit_score: 0.88 },
+          ],
+          _meta: { processing_time_ms: 1620, ai_cost_usd: 0.0028, cache_hit: false },
+        },
+        value_narrative: "Notion AI + Linear: is_sponsored: false, recommendation_strength: 'strong' — organic endorsements. Notion has a referral programme — affiliate link could replace the organic mention at zero credibility cost. Beehiiv sponsor_fit_score: 0.88 — high fit. Use estimated_cpm_usd: 35 to set a floor for future sponsor negotiations. Run track_product_trends across the last 12 issues to find your best partnership targets.",
+        eval: { F1: 0.97, latency_ms: 7804, cost_usd: 0.000428 },
+      },
+    ],
+  };
+}
+
+// ============================================================================
 // WORKER ENTRY POINT
 // ============================================================================
 
@@ -551,6 +620,20 @@ export default {
         JSON.stringify({ tools: summaries, as_of: new Date().toISOString() }),
         { headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
       );
+    }
+
+    // Agent discovery: real-output examples (no auth required)
+    if (url.pathname === "/examples" && request.method === "GET") {
+      return new Response(JSON.stringify(getExamplesResponse()), {
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
+    }
+
+    // Agent discovery: LLM-readable tool docs (no auth required)
+    if (url.pathname === "/.well-known/llms.txt" && request.method === "GET") {
+      return new Response(LLMS_TXT, {
+        headers: { "Content-Type": "text/plain; charset=utf-8", ...CORS_HEADERS },
+      });
     }
 
     // MCP Streamable HTTP endpoint (stateless)
