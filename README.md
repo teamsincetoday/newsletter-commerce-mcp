@@ -96,6 +96,34 @@ Returns CPM estimate, read-through rate, and sponsor-reader fit score per sponso
 
 Requires prior `extract_newsletter_products` calls for each newsletter_id.
 
+## Example Output
+
+Real extraction from a TLDR Tech newsletter (eval score: **F1=0.97**, $0.000428/call, 7804ms):
+
+```json
+{
+  "newsletter_id": "tldr-2024-03-07",
+  "products": [
+    {
+      "name": "Groq",
+      "category": "saas",
+      "mention_context": "Groq has launched public API access — runs Llama 2 at 300 tokens/second",
+      "confidence": 0.94,
+      "recommendation_strength": "neutral"
+    },
+    {
+      "name": "Devin (Cognition AI)",
+      "category": "saas",
+      "mention_context": "first AI software engineer — benchmarks show it can complete real GitHub issues end-to-end",
+      "confidence": 0.91,
+      "recommendation_strength": "strong"
+    }
+  ]
+}
+```
+
+See `/examples` endpoint for full output with value narrative: `https://newsletter-commerce-mcp.sincetoday.workers.dev/examples`
+
 ## Pricing
 
 - Free tier: 200 calls/day per agent (no API key required)
