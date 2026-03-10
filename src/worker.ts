@@ -252,7 +252,10 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
       const newsletterId = newsletter_id ?? randomUUID();
 
       const auth = await authorize(env, request, api_key);
-      if (!auth.authorized) return paymentRequiredResult(auth.reason ?? "Payment required");
+      if (!auth.authorized) {
+        if (metering) ctx.waitUntil(metering.record({ toolName: "_auth_failure", paymentMethod: "free_tier", processingTimeMs: 0, success: false }));
+        return paymentRequiredResult(auth.reason ?? "Payment required");
+      }
 
       if (newsletter_id) {
         const cached = await cacheGet(env.NEWSLETTER_CACHE, newsletterId);
@@ -312,7 +315,9 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
               success: false,
             })
           );
-        const message = err instanceof Error ? err.message : String(err);
+        const message = err instanceof OpenAI.APIError
+          ? "upstream service temporarily unavailable"
+          : (err instanceof Error ? err.message : "internal error");
         return errorResult(`Extraction failed: ${message}`);
       }
     }
@@ -347,7 +352,10 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
       const newsletterId = newsletter_id ?? randomUUID();
 
       const auth = await authorize(env, request, api_key);
-      if (!auth.authorized) return paymentRequiredResult(auth.reason ?? "Payment required");
+      if (!auth.authorized) {
+        if (metering) ctx.waitUntil(metering.record({ toolName: "_auth_failure", paymentMethod: "free_tier", processingTimeMs: 0, success: false }));
+        return paymentRequiredResult(auth.reason ?? "Payment required");
+      }
 
       try {
         let extraction = newsletter_id
@@ -401,7 +409,9 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
               success: false,
             })
           );
-        const message = err instanceof Error ? err.message : String(err);
+        const message = err instanceof OpenAI.APIError
+          ? "upstream service temporarily unavailable"
+          : (err instanceof Error ? err.message : "internal error");
         return errorResult(`Sponsor analysis failed: ${message}`);
       }
     }
@@ -437,7 +447,10 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
       const start = Date.now();
 
       const auth = await authorize(env, request, api_key);
-      if (!auth.authorized) return paymentRequiredResult(auth.reason ?? "Payment required");
+      if (!auth.authorized) {
+        if (metering) ctx.waitUntil(metering.record({ toolName: "_auth_failure", paymentMethod: "free_tier", processingTimeMs: 0, success: false }));
+        return paymentRequiredResult(auth.reason ?? "Payment required");
+      }
 
       try {
         const extractions: ExtractionResult[] = [];
@@ -492,7 +505,9 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
               success: false,
             })
           );
-        const message = err instanceof Error ? err.message : String(err);
+        const message = err instanceof OpenAI.APIError
+          ? "upstream service temporarily unavailable"
+          : (err instanceof Error ? err.message : "internal error");
         return errorResult(`Trend analysis failed: ${message}`);
       }
     }
