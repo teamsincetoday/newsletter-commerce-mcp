@@ -285,7 +285,13 @@ export async function extractProducts(
   // Build user message
   let userMessage = `Extract products and sponsor sections from this newsletter content:\n\n${text}`;
   if (categoryFilter && categoryFilter.length > 0) {
-    userMessage += `\n\nOnly include products in these categories: ${categoryFilter.join(", ")}`;
+    // Sanitize category names to prevent prompt injection (OWASP MCP audit 2026-03-10)
+    const safeCategories = categoryFilter
+      .map((c) => c.replace(/[^\w\s\-\/]/g, "").trim())
+      .filter(Boolean);
+    if (safeCategories.length > 0) {
+      userMessage += `\n\nOnly include products in these categories: ${safeCategories.join(", ")}`;
+    }
   }
 
   let response: Awaited<ReturnType<typeof client.chat.completions.create>>;
