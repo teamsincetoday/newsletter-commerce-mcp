@@ -20,6 +20,13 @@ export type ProductCategory =
 
 export type RecommendationStrength = "strong" | "endorsed" | "mentioned" | "organic";
 
+export interface AestheticTags {
+  warmth: "warm" | "cool" | "neutral";
+  density: "minimal" | "maximal" | "balanced";
+  origin: "natural" | "synthetic" | "mixed";
+  tradition: "traditional" | "contemporary" | "hybrid";
+}
+
 export type PaymentMethod = "disabled" | "api_key" | "free_tier";
 
 // ============================================================================
@@ -34,6 +41,7 @@ export interface ProductMention {
   affiliate_link: string | null;
   confidence: number;
   is_sponsored: boolean;
+  aestheticTags?: AestheticTags;
 }
 
 export interface SponsorSection {
@@ -107,6 +115,10 @@ export interface OpenAINewsletterResponse {
     affiliate_link: string | null;
     confidence: number;
     is_sponsored: boolean;
+    aesthetic_warmth?: string;
+    aesthetic_density?: string;
+    aesthetic_origin?: string;
+    aesthetic_tradition?: string;
   }>;
   sponsor_sections: Array<{
     sponsor_name: string;
