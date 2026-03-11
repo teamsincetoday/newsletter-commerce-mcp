@@ -9,7 +9,7 @@ MCP server for newsletter commerce intelligence. Extracts affiliate products, sp
 - Output: products array [{name, category, mention_context, recommendation_strength, affiliate_link, confidence, is_sponsored}], sponsor_sections array, _meta
 - Typical output: 300-600 tokens
 - Latency: 2-4 seconds (OpenAI GPT-4o-mini)
-- Price: free for first 200 calls/day, $0.001/call with API key
+- Price: free for first 200 calls/day, $0.01/call with API key
 - Supports: Substack HTML, Ghost HTML, Beehiiv HTML, plain text
 
 ### analyze_newsletter_sponsors

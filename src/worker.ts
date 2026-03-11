@@ -33,7 +33,7 @@ import type { ExtractionResult, AuthResult } from "./types.js";
 
 const SERVER_NAME = "newsletter-commerce-intelligence";
 const SERVER_VERSION = "0.1.0";
-const TOOL_PRICE_USD = 0.001;
+const TOOL_PRICE_USD = 0.01;
 const TOOL_NAMES = [
   "extract_newsletter_products",
   "analyze_newsletter_sponsors",
