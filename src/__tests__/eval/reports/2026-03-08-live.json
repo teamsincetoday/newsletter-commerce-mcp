@@ -1,0 +1,164 @@
+{
+  "timestamp": "2026-03-08T02:41:35.763Z",
+  "mode": "live",
+  "results": [
+    {
+      "caseId": "tldr-tech-tools",
+      "caseName": "TLDR Tech — Developer Tools Digest",
+      "timestamp": "2026-03-08T02:41:21.761Z",
+      "mode": "live",
+      "scores": [
+        {
+          "dimension": "accuracy",
+          "score": 100,
+          "target": 80,
+          "weight": 0.4,
+          "details": "F1=100 (P=100, R=100). Required: 5/5. Found: 6, Expected: 6.",
+          "passed": true
+        },
+        {
+          "dimension": "value",
+          "score": 100,
+          "target": 70,
+          "weight": 0.35,
+          "details": "entities=6 ✓, conf=0.77 ✓, strong_rec ✓, sponsors=1 ✓",
+          "passed": true
+        },
+        {
+          "dimension": "cost",
+          "score": 100,
+          "target": 80,
+          "weight": 0.25,
+          "details": "cost=$0.00043 (budget=$0.0100) ✓",
+          "passed": true
+        }
+      ],
+      "overallScore": 100,
+      "passed": true,
+      "durationMs": 9416,
+      "metrics": {
+        "entity_count": 6,
+        "sponsor_count": 1,
+        "avg_confidence": 0.77,
+        "latency_ms": 9416,
+        "cost_usd": 0.00042794999999999997,
+        "affiliate_matches": 6,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      }
+    },
+    {
+      "caseId": "creator-economy-tools",
+      "caseName": "Creator Economy — Newsletter & Monetization Tools",
+      "timestamp": "2026-03-08T02:41:28.083Z",
+      "mode": "live",
+      "scores": [
+        {
+          "dimension": "accuracy",
+          "score": 100,
+          "target": 80,
+          "weight": 0.4,
+          "details": "F1=100 (P=100, R=100). Required: 4/4. Found: 5, Expected: 5.",
+          "passed": true
+        },
+        {
+          "dimension": "value",
+          "score": 90,
+          "target": 70,
+          "weight": 0.35,
+          "details": "entities=5 ✓, conf=0.74 (moderate), strong_rec ✓, sponsors=n/a ✓",
+          "passed": true
+        },
+        {
+          "dimension": "cost",
+          "score": 100,
+          "target": 80,
+          "weight": 0.25,
+          "details": "cost=$0.00036 (budget=$0.0100) ✓",
+          "passed": true
+        }
+      ],
+      "overallScore": 97,
+      "passed": true,
+      "durationMs": 6321,
+      "metrics": {
+        "entity_count": 5,
+        "sponsor_count": 0,
+        "avg_confidence": 0.74,
+        "latency_ms": 6321,
+        "cost_usd": 0.00035939999999999995,
+        "affiliate_matches": 3,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      }
+    },
+    {
+      "caseId": "finance-products",
+      "caseName": "Personal Finance — Tools & Investment Platforms",
+      "timestamp": "2026-03-08T02:41:35.760Z",
+      "mode": "live",
+      "scores": [
+        {
+          "dimension": "accuracy",
+          "score": 95,
+          "target": 80,
+          "weight": 0.4,
+          "details": "F1=91 (P=83, R=100). Required: 3/3. Found: 6, Expected: 5.",
+          "passed": true
+        },
+        {
+          "dimension": "value",
+          "score": 90,
+          "target": 70,
+          "weight": 0.35,
+          "details": "entities=6 ✓, conf=0.65 (moderate), strong_rec ✓, sponsors=1 ✓",
+          "passed": true
+        },
+        {
+          "dimension": "cost",
+          "score": 100,
+          "target": 80,
+          "weight": 0.25,
+          "details": "cost=$0.00046 (budget=$0.0100) ✓",
+          "passed": true
+        }
+      ],
+      "overallScore": 95,
+      "passed": true,
+      "durationMs": 7675,
+      "metrics": {
+        "entity_count": 6,
+        "sponsor_count": 1,
+        "avg_confidence": 0.65,
+        "latency_ms": 7675,
+        "cost_usd": 0.00045509999999999995,
+        "affiliate_matches": 4,
+        "precision": 0.83,
+        "recall": 1,
+        "f1": 0.91
+      }
+    }
+  ],
+  "summary": {
+    "totalCases": 3,
+    "passed": 3,
+    "failed": 0,
+    "overallScore": 97,
+    "dimensionAverages": {
+      "accuracy": 98,
+      "value": 93,
+      "cost": 100
+    }
+  },
+  "aggregatedMetrics": {
+    "avg_entity_count": 6,
+    "avg_latency_ms": 7804,
+    "avg_cost_usd": 0.00041415,
+    "avg_f1": 0.97,
+    "avg_confidence": 0.72,
+    "total_affiliate_matches": 13
+  },
+  "priorities": []
+}
