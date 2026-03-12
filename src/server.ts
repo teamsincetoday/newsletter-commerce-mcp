@@ -142,7 +142,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "extract_newsletter_products",
-    "Extract affiliate links, product recommendations, and sponsored mentions from a newsletter issue. Supports HTML from Substack, Ghost, and Beehiiv plus plain text. Returns product name, category (saas, supplement, book, course, physical_goods), affiliate link URL, recommendation strength, and sponsor flag. Use for newsletter monetization analysis, affiliate program auditing, and cross-issue product tracking. Caches results by newsletter_id.",
+    "Extract affiliate links, product recommendations, and sponsored mentions from newsletter content. Pass the newsletter body directly as HTML or plain text — does not fetch content from URLs. Supports Substack, Ghost, and Beehiiv HTML plus plain text. Returns product name, category, affiliate link URL, recommendation strength, and sponsor flag. Call this before analyze_newsletter_sponsors or track_product_trends — both tools reuse its cache. Use for monetization analysis, affiliate auditing, and cross-issue tracking. Example: newsletter_id='morning-brew-2026-03-12', category_filter=['saas','physical_goods'].",
     {
       content: z
         .string()
@@ -253,7 +253,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "analyze_newsletter_sponsors",
-    "Identify sponsored sections in a newsletter and estimate advertising value: CPM, read-through rate, and sponsor-reader fit score. Returns each sponsor's name, placement type (dedicated section, inline, footer), estimated CPM, and audience fit score. Use for newsletter advertising intelligence, sponsor acquisition research, and ad placement optimization. Reuses cached extraction when newsletter_id matches a prior extract_newsletter_products call.",
+    "Identify sponsored sections in a newsletter and estimate advertising value: CPM, read-through rate, and sponsor-reader fit score. Returns each sponsor's name, placement type (dedicated section, inline, footer), estimated CPM based on industry benchmarks, and audience fit score. Use for advertising intelligence, sponsor acquisition research, and ad placement optimization. Use this tool for sponsor metrics only; for the full affiliate product and link list use extract_newsletter_products instead. Reuses cached extraction when newsletter_id matches a prior extract_newsletter_products call.",
     {
       content: z
         .string()
@@ -344,7 +344,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "track_product_trends",
-    "Compare affiliate product mentions and brand frequency across multiple newsletter issues to detect rising, stable, and declining trends. Returns trend velocity, mention count per issue, and category breakdown. Use for newsletter affiliate marketing optimization, editorial product tracking, and sponsor category trends. Requires prior extract_newsletter_products calls for each newsletter_id.",
+    "Compare affiliate product mentions and brand frequency across multiple newsletter issues to detect rising, stable, and declining trends. Returns trend velocity, mention count per issue, and category breakdown. No AI call — computed from cached extraction data only. Use for affiliate marketing optimization, editorial product tracking, and sponsor category analysis. Requires prior extract_newsletter_products call for each newsletter_id — returns an error listing missing IDs if any are not in cache. Example: newsletter_ids=['issue-101','issue-102'].",
     {
       newsletter_ids: z
         .array(z.string().max(ID_MAX_CHARS))
