@@ -103,6 +103,7 @@ export function stripHtml(html: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ")
     .replace(/&[a-z]+;/gi, " ")         // Remove other HTML entities
+    .replace(/<[a-zA-Z][^>]*>/g, " ")   // Remove markup reconstructed from entity decoding (security)
     .replace(/\n{3,}/g, "\n\n")         // Collapse excess blank lines
     .replace(/[ \t]+/g, " ")            // Collapse horizontal whitespace
     .trim();
