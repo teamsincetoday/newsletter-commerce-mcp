@@ -253,7 +253,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "analyze_newsletter_sponsors",
-    "Identify sponsored sections in a newsletter and estimate advertising value: CPM, read-through rate, and sponsor-reader fit score. Returns each sponsor's name, placement type (dedicated section, inline, footer), estimated CPM based on industry benchmarks, and audience fit score. Use for advertising intelligence, sponsor acquisition research, and ad placement optimization. Use this tool for sponsor metrics only; for the full affiliate product and link list use extract_newsletter_products instead. Reuses cached extraction when newsletter_id matches a prior extract_newsletter_products call.",
+    "Identify sponsored sections in a newsletter and estimate advertising value: CPM, read-through rate, and sponsor-reader fit score. Returns each sponsor's name, placement type (dedicated section, inline, footer), estimated CPM based on industry benchmarks, and audience fit score. Revenue estimates are benchmark averages — not live ad-platform data. Use for advertising intelligence, sponsor acquisition research, and ad placement optimization. Use this tool for sponsor metrics only; for the full affiliate product and link list use extract_newsletter_products instead. Reuses cached extraction when newsletter_id matches a prior extract_newsletter_products call. Example: newsletter_id='tldr-2026-03-12' → returns [{sponsor:'Warp', placement:'dedicated_section', estimated_cpm:40, fit_score:0.85}].",
     {
       content: z
         .string()
