@@ -25,6 +25,7 @@ import {
   computeTrends,
 } from "./extractor.js";
 import { CloudflareMetering } from "./metering-cloudflare.js";
+import { generateEditionSection } from "./edition-formatter.js";
 import type { ExtractionResult, AuthResult } from "./types.js";
 
 // ============================================================================
@@ -38,6 +39,7 @@ const TOOL_NAMES = [
   "extract_newsletter_products",
   "analyze_newsletter_sponsors",
   "track_product_trends",
+  "generate_newsletter_products_section",
 ] as const;
 
 export const FREE_TIER_DAILY_LIMIT = 200;
@@ -523,6 +525,90 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
     }
   );
 
+  // --------------------------------------------------------------------------
+  // TOOL 4: generate_newsletter_products_section
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    "generate_newsletter_products_section",
+    "Format extracted newsletter products into a 'Products in This Edition' footer section. Returns ready-to-paste markdown or HTML, grouped by endorsement strength (strong/endorsed/mentioned), with affiliate links where resolved. Use after extract_newsletter_products — pass newsletter_id to use cached extraction, or pass products[] directly. Handles null affiliate_link gracefully (plain name, no broken link). Format: markdown (default) for newsletter editors and Ghost/Substack copy-paste; html for custom templates. Style: full (default) groups by endorsement with context quotes and a CTA footer; minimal produces a compact product list. Example: call extract_newsletter_products on 'swipe-file-issue-47', then call generate_newsletter_products_section with newsletter_id='swipe-file-issue-47' to get a formatted footer with Notion AI, Beehiiv, and Linear grouped by strength.",
+    {
+      newsletter_id: z
+        .string()
+        .max(ID_MAX_CHARS)
+        .optional()
+        .describe(
+          "Newsletter issue ID from a prior extract_newsletter_products call — uses cached extraction. Example: 'swipe-file-issue-47'"
+        ),
+      products: z
+        .array(
+          z.object({
+            name: z.string(),
+            category: z.string(),
+            mention_context: z.string().optional(),
+            recommendation_strength: z.string(),
+            affiliate_link: z.string().nullable().optional(),
+            confidence: z.number(),
+            is_sponsored: z.boolean().optional(),
+          })
+        )
+        .optional()
+        .describe(
+          "Raw products array from extract_newsletter_products output. Use instead of newsletter_id when passing data directly."
+        ),
+      format: z
+        .enum(["markdown", "html"])
+        .optional()
+        .describe("Output format: markdown (default) or html"),
+      style: z
+        .enum(["minimal", "full"])
+        .optional()
+        .describe(
+          "minimal = name + category list; full (default) = grouped by endorsement strength with context quotes and affiliate CTA"
+        ),
+      api_key: z
+        .string()
+        .max(API_KEY_MAX_CHARS)
+        .optional()
+        .describe("Optional API key for paid access beyond the free tier"),
+    },
+    async ({ newsletter_id, products: rawProducts, format, style, api_key }) => {
+      const start = Date.now();
+
+      const auth = await authorize(env, request, api_key);
+      if (!auth.authorized) {
+        if (metering) ctx.waitUntil(metering.record({ toolName: "_auth_failure", paymentMethod: "free_tier", processingTimeMs: 0, success: false }));
+        return paymentRequiredResult(auth.reason ?? "Payment required");
+      }
+
+      try {
+        let products: import("./types.js").ProductMention[];
+        if (rawProducts) {
+          products = rawProducts as import("./types.js").ProductMention[];
+        } else if (newsletter_id) {
+          const cached = await cacheGet(env.NEWSLETTER_CACHE, newsletter_id);
+          if (!cached) {
+            return errorResult(`No cached extraction found for newsletter_id: "${newsletter_id}". Run extract_newsletter_products first.`);
+          }
+          products = cached.products;
+        } else {
+          return errorResult("Provide either newsletter_id or products[].");
+        }
+
+        const fmt = format ?? "markdown";
+        const sty = style ?? "full";
+        const section = generateEditionSection(products, fmt, sty);
+
+        if (metering) ctx.waitUntil(metering.record({ toolName: "generate_newsletter_products_section", paymentMethod: meteringMethod(auth.method), amountUsd: auth.method === "api_key" ? TOOL_PRICE_USD : 0, processingTimeMs: Date.now() - start, success: true }));
+        return { content: [{ type: "text", text: section }] };
+      } catch (err) {
+        if (metering) ctx.waitUntil(metering.record({ toolName: "generate_newsletter_products_section", paymentMethod: meteringMethod(auth.method), processingTimeMs: Date.now() - start, success: false }));
+        const message = err instanceof Error ? err.message : "internal error";
+        return errorResult(`Newsletter section generation failed: ${message}`);
+      }
+    }
+  );
+
   return server;
 }
 
@@ -590,6 +676,17 @@ function getExamplesResponse() {
         },
         value_narrative: "Notion AI + Linear: is_sponsored: false, recommendation_strength: 'strong' — organic endorsements. Notion has a referral programme — affiliate link could replace the organic mention at zero credibility cost. Beehiiv sponsor_fit_score: 0.88 — high fit. Use estimated_cpm_usd: 35 to set a floor for future sponsor negotiations. Run track_product_trends across the last 12 issues to find your best partnership targets.",
         eval: { F1: 0.97, latency_ms: 7804, cost_usd: 0.000428 },
+      },
+      {
+        tool: "generate_newsletter_products_section",
+        description: "Format extracted newsletter products into a ready-to-paste 'Products in This Edition' section. Pass newsletter_id to use a cached extraction or pass products[] directly. Supports markdown/html and minimal/full styles.",
+        input: {
+          newsletter_id: "swipe-file-issue-47",
+          format: "markdown",
+          style: "full",
+        },
+        output: "## Products in This Edition\n\n### ⭐ Top Picks\n\n- **Notion AI** — saas\n  > *\"running my entire writing workflow through Notion AI for three months now. Genuinely the best $10\"*\n- **Linear** — saas\n  > *\"switched to Linear for project management. No affiliate link, just a real recommendation\"*\n\n### 👍 Endorsed\n\n- [Beehiiv](beehiiv.com/growth) — saas\n  > *\"newsletter platform built for growth. Start free at beehiiv.com/growth\"*\n\n---\n*Affiliate links help keep this newsletter free. Thank you.*",
+        value_narrative: "Notion AI and Linear surface as 'strong' organic endorsements — prime candidates for affiliate programme signup (Notion has a referral programme). Beehiiv is a paid sponsor with call_to_action already resolved. The formatted section is ready to paste into any Substack/Ghost editor. Run track_product_trends to find which products recur across issues for priority affiliate outreach.",
       },
     ],
   };
