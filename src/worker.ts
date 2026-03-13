@@ -688,6 +688,29 @@ function getExamplesResponse() {
         output: "## Products in This Edition\n\n### ⭐ Top Picks\n\n- **Notion AI** — saas\n  > *\"running my entire writing workflow through Notion AI for three months now. Genuinely the best $10\"*\n- **Linear** — saas\n  > *\"switched to Linear for project management. No affiliate link, just a real recommendation\"*\n\n### 👍 Endorsed\n\n- [Beehiiv](beehiiv.com/growth) — saas\n  > *\"newsletter platform built for growth. Start free at beehiiv.com/growth\"*\n\n---\n*Affiliate links help keep this newsletter free. Thank you.*",
         value_narrative: "Notion AI and Linear surface as 'strong' organic endorsements — prime candidates for affiliate programme signup (Notion has a referral programme). Beehiiv is a paid sponsor with call_to_action already resolved. The formatted section is ready to paste into any Substack/Ghost editor. Run track_product_trends to find which products recur across issues for priority affiliate outreach.",
       },
+      {
+        tool: "analyze_newsletter_sponsors",
+        description: "Score sponsor sections from a cached newsletter extraction. Returns CPM benchmark, read-through estimate, sponsor fit score, and CTA effectiveness per sponsor. Uses cached data — no AI cost. Call after extract_newsletter_products.",
+        input: { newsletter_id: "swipe-file-issue-47" },
+        output: {
+          newsletter_id: "swipe-file-issue-47",
+          sponsors: [{ sponsor_name: "Beehiiv", estimated_cpm_usd: 35, estimated_read_through: 0.61, sponsor_fit_score: 0.88, call_to_action: "beehiiv.com/growth", cta_quality: "high", recommendation: "Strong fit for a writing-focused audience. Negotiate toward $38 CPM at renewal." }],
+          _meta: { processing_time_ms: 65, ai_cost_usd: 0, cache_hit: true },
+        },
+        value_narrative: "Beehiiv fit 0.88 = highly aligned sponsor for a writing audience. Use this score as leverage in renewal negotiations — low fit scores ($0.3) justify declining or repricing a sponsor. Track sponsor_fit_score across issues to see if a sponsor is genuinely relevant or just paying.",
+      },
+      {
+        tool: "track_product_trends",
+        description: "Identify rising and falling product trends across newsletter issues. Shows mention velocity, trend direction (hot/rising/stable/fading), and issue count. Reads from cached extractions — no re-processing cost.",
+        input: { publication_id: "swipe-file", weeks: 12 },
+        output: {
+          publication_id: "swipe-file",
+          trending_up: [{ product: "Notion AI", category: "saas", mention_velocity: 3.1, issues_mentioned: 8, trend: "hot" }, { product: "Linear", category: "saas", mention_velocity: 1.4, issues_mentioned: 4, trend: "rising" }],
+          trending_down: [{ product: "Roam Research", category: "saas", mention_velocity: 0.2, issues_mentioned: 1, trend: "fading" }],
+          _meta: { issues_analyzed: 48, date_range: "12 weeks" },
+        },
+        value_narrative: "Notion AI trending hot (3.1×) across 8 issues = strong reader resonance. Notion's referral programme pays $10–$50/conversion. Reach out NOW. Roam fading — don't pitch them. Stable products are affiliate candidates for long-term partnerships rather than launch promotions.",
+      },
     ],
   };
 }
