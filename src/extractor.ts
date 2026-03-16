@@ -342,6 +342,7 @@ export async function extractProducts(
       ],
       response_format: { type: "json_object" },
       temperature: 0,
+      max_tokens: 2000,
     });
   } catch (err) {
     // Graceful fallback — return empty result rather than crashing
