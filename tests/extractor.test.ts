@@ -253,6 +253,45 @@ describe("normalizeProducts", () => {
     ]);
     expect(result[0]?.mention_context.length).toBe(100);
   });
+
+  // EXP-2026-03-11-3: aesthetic tags coverage
+  it("attaches aestheticTags when all four aesthetic fields are valid", () => {
+    const result = normalizeProducts([
+      {
+        name: "Notion",
+        category: "saas",
+        mention_context: "Notion keeps me organized",
+        recommendation_strength: "endorsed",
+        affiliate_link: null,
+        confidence: 0.88,
+        is_sponsored: false,
+        aesthetic_warmth: "cool",
+        aesthetic_density: "minimal",
+        aesthetic_origin: "synthetic",
+        aesthetic_tradition: "contemporary",
+      },
+    ]);
+    expect(result[0]?.aestheticTags).toBeDefined();
+    expect(result[0]?.aestheticTags?.warmth).toBe("cool");
+    expect(result[0]?.aestheticTags?.density).toBe("minimal");
+    expect(result[0]?.aestheticTags?.origin).toBe("synthetic");
+    expect(result[0]?.aestheticTags?.tradition).toBe("contemporary");
+  });
+
+  it("omits aestheticTags when all aesthetic fields are absent", () => {
+    const result = normalizeProducts([
+      {
+        name: "Morning Brew",
+        category: "media",
+        mention_context: "I read Morning Brew every morning",
+        recommendation_strength: "mentioned",
+        affiliate_link: null,
+        confidence: 0.75,
+        is_sponsored: false,
+      },
+    ]);
+    expect(result[0]?.aestheticTags).toBeUndefined();
+  });
 });
 
 // ============================================================================
