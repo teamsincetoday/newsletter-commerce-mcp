@@ -9,7 +9,9 @@
  *   - Wealthfront (service, endorsed)
  *   - Robinhood (saas, mentioned)
  *
- * Optional: Acorns, Marcus Goldman Sachs
+ * Optional: Acorns, Marcus Goldman Sachs, Betterment
+ *   Betterment: is the sponsor AND is extracted as a product (is_sponsored=true).
+ *   Extractor correctly surfaces it in products[] with is_sponsored flag set.
  * Sponsor: Betterment (required)
  */
 
@@ -121,6 +123,7 @@ export const financeProducts: NewsletterEvalCase = {
     { name: "Robinhood",          category: "saas",    required: true,  minStrength: "mentioned" },
     { name: "Acorns",             category: "saas",    required: false, minStrength: "mentioned" },
     { name: "Marcus",             category: "service", required: false, minStrength: "mentioned" },
+    { name: "Betterment",         category: "service", required: false, minStrength: "mentioned" },
   ],
   expectedSponsors: [
     { name: "Betterment", required: true },
