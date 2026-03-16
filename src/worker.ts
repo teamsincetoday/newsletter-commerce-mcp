@@ -644,11 +644,19 @@ MCP server for newsletter commerce intelligence. Extracts affiliate products, sp
 - Latency: <100ms (local computation, no OpenAI call)
 - Requires: prior extract_newsletter_products calls for each newsletter_id
 
+### generate_newsletter_products_section
+- Input: newsletter_id (uses cached extraction) OR products array (raw from prior call), optional format ("markdown" | "html", default markdown), optional style ("minimal" | "full", default full)
+- Output: formatted products section string — product list with names, descriptions, affiliate links (or placeholders), and a "Products in this edition" header with CTA block
+- Typical output: 200-500 tokens
+- Latency: <50ms (local formatting, no OpenAI call)
+- Use case: last-mile formatting — takes extract_newsletter_products output and renders a shoppable "Products in this edition" footer ready to paste into your newsletter template
+- Note: affiliate_link fields populated only when ChatAds integration is configured; otherwise placeholder URLs returned
+
 ## Categories
 saas, physical_goods, course, supplement, book, service, media, other
 
 ## Auth
-Set MCP_API_KEYS=your-key in your MCP config for paid access. Free tier: 200 calls/day, no key required.`;
+Set MCP_API_KEYS=your-key in your MCP config for paid access. Free tier: 200 calls/day, $0.01/call above that.`;
 
 function getExamplesResponse() {
   return {
