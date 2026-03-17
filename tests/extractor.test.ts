@@ -550,6 +550,34 @@ describe("computeTrends", () => {
     expect(notion?.issues_present).toBe(1);      // only 1 issue
     expect(notion?.total_mentions).toBeGreaterThanOrEqual(1);
   });
+
+  it("returns top_category as the dominant category across trends", () => {
+    // 2 saas products, 1 physical_goods — top_category should be "saas"
+    const makeExtractionWithCategory = (id: string, products: Array<{ name: string; category: "saas" | "physical_goods" }>): ExtractionResult => ({
+      newsletter_id: id,
+      products: products.map(p => ({
+        name: p.name,
+        category: p.category,
+        mention_context: `Context for ${p.name}`,
+        recommendation_strength: "mentioned" as const,
+        affiliate_link: null,
+        confidence: 0.8,
+        is_sponsored: false,
+      })),
+      sponsor_sections: [],
+      _meta: { processing_time_ms: 0, ai_cost_usd: 0, cache_hit: false },
+    });
+    const extractions = [
+      makeExtractionWithCategory("id1", [{ name: "Notion", category: "saas" }, { name: "Linear", category: "saas" }, { name: "Standing Desk", category: "physical_goods" }]),
+    ];
+    const report = computeTrends(extractions);
+    expect(report.top_category).toBe("saas");
+  });
+
+  it("returns undefined top_category for empty trends", () => {
+    const report = computeTrends([]);
+    expect(report.top_category).toBeUndefined();
+  });
 });
 
 // ============================================================================

@@ -101,6 +101,8 @@ export interface TrendReport {
   trends: ProductTrend[];
   newsletter_ids: string[];
   analysis_window_issues: number;
+  /** Category with the most trending products — routing signal for affiliate network selection */
+  top_category?: ProductCategory;
   _meta?: Record<string, unknown>;
 }
 

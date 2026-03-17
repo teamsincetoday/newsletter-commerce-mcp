@@ -20,10 +20,16 @@ MCP server for newsletter commerce intelligence. Extracts affiliate products, sp
 
 ### track_product_trends
 - Input: newsletter_ids (list of previously extracted issue IDs), optional category_filter
-- Output: trends array [{name, category, trend (rising|stable|falling), issues_present, total_mentions}]
+- Output: trends array [{name, category, trend (rising|stable|falling), issues_present, total_mentions, avg_recommendation_strength}], top_category (dominant category — routing signal for affiliate network selection)
 - Typical output: 200-400 tokens
 - Latency: <100ms (local computation, no OpenAI call)
 - Requires: prior extract_newsletter_products calls for each newsletter_id
+
+### generate_newsletter_products_section
+- Input: newsletter_id (uses cached extraction), optional products array, optional format (markdown|html), optional style (minimal|full)
+- Output: formatted string — shoppable product list with names, descriptions, affiliate links, and CTA block
+- Typical output: 300-800 tokens
+- Latency: <50ms (pure local formatting, no OpenAI call)
 
 ## Categories
 saas, physical_goods, course, supplement, book, service, media, other
