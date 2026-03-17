@@ -447,10 +447,10 @@ export function computeTrends(extractions: ExtractionResult[]): TrendReport {
     return { trends: [], newsletter_ids: [], analysis_window_issues: 0 };
   }
 
-  // Aggregate: product name → { issues_present, total_mentions, category }
+  // Aggregate: product name → { issues_present, total_mentions, total_strength, category }
   const productMap = new Map<
     string,
-    { issues_present: number; total_mentions: number; category: ProductCategory }
+    { issues_present: number; total_mentions: number; total_strength: number; category: ProductCategory }
   >();
 
   for (const extraction of extractions) {
@@ -459,6 +459,7 @@ export function computeTrends(extractions: ExtractionResult[]): TrendReport {
 
     for (const product of extraction.products) {
       const key = product.name.toLowerCase();
+      const strengthScore = STRENGTH_RANK[product.recommendation_strength] ?? 1;
 
       if (!seenInIssue.has(key)) {
         seenInIssue.add(key);
@@ -466,10 +467,12 @@ export function computeTrends(extractions: ExtractionResult[]): TrendReport {
         if (existing) {
           existing.issues_present += 1;
           existing.total_mentions += 1;
+          existing.total_strength += strengthScore;
         } else {
           productMap.set(key, {
             issues_present: 1,
             total_mentions: 1,
+            total_strength: strengthScore,
             category: product.category,
           });
         }
@@ -509,6 +512,10 @@ export function computeTrends(extractions: ExtractionResult[]): TrendReport {
       trend,
       issues_present: data.issues_present,
       total_mentions: data.total_mentions,
+      avg_recommendation_strength:
+        data.issues_present > 0
+          ? Math.round((data.total_strength / data.issues_present) * 100) / 100
+          : 0,
     });
   }
 

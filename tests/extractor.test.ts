@@ -457,6 +457,10 @@ describe("computeTrends", () => {
     const notion = report.trends.find(t => t.name === "Notion");
     expect(notion?.trend).toBe("rising");
     expect(notion?.issues_present).toBe(4);
+    // avg_recommendation_strength must be finite (regression guard for NaN)
+    expect(Number.isFinite(notion?.avg_recommendation_strength)).toBe(true);
+    // helper uses "mentioned" → STRENGTH_RANK=1, avg should be 1.0
+    expect(notion?.avg_recommendation_strength).toBe(1);
   });
 
   it("marks product as 'falling' when present in <30% of issues", () => {

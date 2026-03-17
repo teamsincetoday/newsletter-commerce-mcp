@@ -93,6 +93,8 @@ export interface ProductTrend {
   trend: "rising" | "stable" | "falling";
   issues_present: number;
   total_mentions: number;
+  /** Average recommendation strength score (0–3: strong=3, endorsed=2, mentioned=1, organic=0) */
+  avg_recommendation_strength: number;
 }
 
 export interface TrendReport {
