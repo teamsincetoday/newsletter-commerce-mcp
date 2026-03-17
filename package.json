@@ -1,18 +1,31 @@
 {
   "name": "newsletter-commerce-mcp",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Newsletter Commerce Intelligence MCP Server - Extract product mentions, score sponsors, and track trends from newsletters (Substack, Ghost, Beehiiv, email HTML). Built for the agent-to-agent economy.",
   "type": "module",
   "license": "MIT",
   "author": "Since Today Studio <team@sincetoday.com>",
-  "engines": { "node": ">=20.0.0" },
-  "bin": { "newsletter-commerce-mcp": "./dist/cli.js" },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "newsletter-commerce-mcp": "./dist/cli.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
-  "files": ["dist", "data", "README.md", "LICENSE", ".env.example"],
+  "files": [
+    "dist",
+    "data",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/cli.ts",
@@ -36,5 +49,17 @@
     "typescript": "^5.7.0",
     "vitest": "^4.0.18"
   },
-  "keywords": ["mcp", "model-context-protocol", "newsletter", "commerce", "ner", "product-extraction", "ai-agent", "agent-to-agent", "substack", "beehiiv", "ghost"]
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "newsletter",
+    "commerce",
+    "ner",
+    "product-extraction",
+    "ai-agent",
+    "agent-to-agent",
+    "substack",
+    "beehiiv",
+    "ghost"
+  ]
 }
