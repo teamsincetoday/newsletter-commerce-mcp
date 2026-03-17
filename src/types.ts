@@ -81,6 +81,8 @@ export interface SponsorAnalysis {
   avg_read_through: number;
   /** Average sponsor-audience fit score across all sponsor sections (0–1). Higher = better audience match. */
   avg_sponsor_fit_score: number;
+  /** Fraction of sponsor sections with a trackable CTA (promo code, URL). 0 = no CTAs, 1 = all have CTAs. Gate: cta_rate > 0 means CTA extraction is worth running. */
+  cta_rate: number;
   estimated_total_cpm_usd: number;
   _meta: Record<string, unknown>;
 }

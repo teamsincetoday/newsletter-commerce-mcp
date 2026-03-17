@@ -418,6 +418,11 @@ export function buildSponsorAnalysis(extraction: ExtractionResult): SponsorAnaly
       ? sponsors.reduce((sum, s) => sum + s.sponsor_fit_score, 0) / sponsor_count
       : 0;
 
+  const cta_rate =
+    sponsor_count > 0
+      ? sponsors.filter(s => s.call_to_action !== null).length / sponsor_count
+      : 0;
+
   const estimated_total_cpm_usd = sponsors.reduce(
     (sum, s) => sum + s.estimated_cpm_usd,
     0,
@@ -428,6 +433,7 @@ export function buildSponsorAnalysis(extraction: ExtractionResult): SponsorAnaly
     sponsor_count,
     avg_read_through: Math.round(avg_read_through * 100) / 100,
     avg_sponsor_fit_score: Math.round(avg_sponsor_fit_score * 100) / 100,
+    cta_rate: Math.round(cta_rate * 100) / 100,
     estimated_total_cpm_usd: Math.round(estimated_total_cpm_usd * 100) / 100,
     _meta: {},
   };

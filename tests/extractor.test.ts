@@ -390,6 +390,7 @@ describe("buildSponsorAnalysis", () => {
     expect(analysis.sponsor_count).toBe(0);
     expect(analysis.avg_read_through).toBe(0);
     expect(analysis.avg_sponsor_fit_score).toBe(0);
+    expect(analysis.cta_rate).toBe(0); // 0 sponsors → 0 rate
     expect(analysis.estimated_total_cpm_usd).toBe(0);
   });
 
@@ -400,7 +401,7 @@ describe("buildSponsorAnalysis", () => {
         section_context: "ctx",
         estimated_cpm_usd: 40,
         estimated_read_through: 0.8,
-        call_to_action: null,
+        call_to_action: "https://sponsora.com/promo",
         sponsor_fit_score: 0.9,
       },
       {
@@ -415,6 +416,7 @@ describe("buildSponsorAnalysis", () => {
     expect(analysis.sponsor_count).toBe(2);
     expect(analysis.avg_read_through).toBe(0.7);
     expect(analysis.avg_sponsor_fit_score).toBe(0.8);
+    expect(analysis.cta_rate).toBe(0.5); // 1 of 2 sponsors has CTA
     expect(analysis.estimated_total_cpm_usd).toBe(100);
   });
 });
