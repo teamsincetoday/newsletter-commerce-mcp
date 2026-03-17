@@ -14,7 +14,7 @@ MCP server for newsletter commerce intelligence. Extracts affiliate products, sp
 
 ### analyze_newsletter_sponsors
 - Input: newsletter content; reuses cache if newsletter_id matches prior extraction
-- Output: sponsors array [{sponsor_name, section_context, estimated_cpm_usd, estimated_read_through, call_to_action, sponsor_fit_score}], sponsor_count, avg_read_through, estimated_total_cpm_usd
+- Output: sponsors array [{sponsor_name, section_context, estimated_cpm_usd, estimated_read_through, call_to_action, sponsor_fit_score}], sponsor_count, avg_read_through, avg_sponsor_fit_score (0–1 audience match), estimated_total_cpm_usd
 - Typical output: 150-350 tokens
 - Latency: 2-4 seconds (or <100ms if cache hit)
 

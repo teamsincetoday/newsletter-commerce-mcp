@@ -79,6 +79,8 @@ export interface SponsorAnalysis {
   sponsors: SponsorSection[];
   sponsor_count: number;
   avg_read_through: number;
+  /** Average sponsor-audience fit score across all sponsor sections (0–1). Higher = better audience match. */
+  avg_sponsor_fit_score: number;
   estimated_total_cpm_usd: number;
   _meta: Record<string, unknown>;
 }

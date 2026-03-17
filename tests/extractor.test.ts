@@ -389,6 +389,7 @@ describe("buildSponsorAnalysis", () => {
     const analysis = buildSponsorAnalysis(makeExtraction([]));
     expect(analysis.sponsor_count).toBe(0);
     expect(analysis.avg_read_through).toBe(0);
+    expect(analysis.avg_sponsor_fit_score).toBe(0);
     expect(analysis.estimated_total_cpm_usd).toBe(0);
   });
 
@@ -413,6 +414,7 @@ describe("buildSponsorAnalysis", () => {
     ]));
     expect(analysis.sponsor_count).toBe(2);
     expect(analysis.avg_read_through).toBe(0.7);
+    expect(analysis.avg_sponsor_fit_score).toBe(0.8);
     expect(analysis.estimated_total_cpm_usd).toBe(100);
   });
 });
