@@ -8,7 +8,8 @@ Extract product mentions, score sponsors, and track affiliate trends from newsle
 |------|-------------|
 | `extract_newsletter_products` | Extract products, affiliate links, and sponsor mentions from a newsletter issue |
 | `analyze_newsletter_sponsors` | Score sponsor sections by CPM, read-through rate, and audience fit |
-| `track_product_trends` | Compare product mentions across multiple newsletter issues |
+| `track_product_trends` | Compare product mentions across multiple newsletter issues to surface trending products and brand patterns |
+| `generate_newsletter_products_section` | Format extracted products into a 'Products in This Edition' footer section (markdown or HTML) |
 
 ## Quick Start
 
@@ -94,11 +95,24 @@ Returns CPM estimate, read-through rate, and sponsor-reader fit score per sponso
 }
 ```
 
-Requires prior `extract_newsletter_products` calls for each newsletter_id.
+Requires prior `extract_newsletter_products` calls for each newsletter_id. Returns trend data including `top_category`, `avg_recommendation_strength`, and `brand` per product trend.
+
+### `generate_newsletter_products_section`
+
+```json
+{
+  "newsletter_id": "swipe-file-issue-47",
+  "format": "markdown",
+  "style": "full",
+  "api_key": "optional"
+}
+```
+
+Formats extracted products into a ready-to-paste 'Products in This Edition' section. Pass `newsletter_id` (uses cached extraction) or `products[]` directly. `format`: `markdown` (default) or `html`. `style`: `full` (default, grouped by endorsement strength with context quotes) or `minimal` (compact list).
 
 ## Example Output
 
-Real extraction from a TLDR Tech newsletter (eval score: **F1=0.97**, $0.000428/call, 7804ms):
+Real extraction from a TLDR Tech newsletter (eval score: **F1=1.00**, $0.00051/call, 7390ms):
 
 ```json
 {
