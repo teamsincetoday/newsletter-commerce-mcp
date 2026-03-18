@@ -582,6 +582,21 @@ describe("computeTrends", () => {
     const report = computeTrends([]);
     expect(report.top_category).toBeUndefined();
   });
+
+  it("sets brand from product name in each ProductTrend entry", () => {
+    const extractions = [
+      makeExtraction("nl1", ["Notion"]),
+      makeExtraction("nl2", ["Morning Brew"]),
+      makeExtraction("nl3", ["newsletter"]),
+    ];
+    const report = computeTrends(extractions);
+    const notion = report.trends.find(t => t.name === "Notion");
+    const morning = report.trends.find(t => t.name === "Morning Brew");
+    const generic = report.trends.find(t => t.name === "newsletter");
+    expect(notion?.brand).toBe("Notion");         // single-word uppercase → brand = self
+    expect(morning?.brand).toBe("Morning");       // two-word → first word
+    expect(generic?.brand).toBeNull();            // lowercase generic → null
+  });
 });
 
 // ============================================================================

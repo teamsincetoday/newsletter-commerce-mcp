@@ -93,6 +93,8 @@ export interface SponsorAnalysis {
 
 export interface ProductTrend {
   name: string;
+  /** Brand extracted from product name (e.g. "Notion", "Beehiiv"). Null when name is generic. Use for brand-level filtering and affiliate network queries. */
+  brand: string | null;
   category: ProductCategory;
   trend: "rising" | "stable" | "falling";
   issues_present: number;

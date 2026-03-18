@@ -444,6 +444,23 @@ export function buildSponsorAnalysis(extraction: ExtractionResult): SponsorAnaly
 // ============================================================================
 
 /**
+ * Extract brand from a product name using a simple first-word heuristic.
+ * For single-word names, returns the name itself if it looks like a proper noun
+ * or acronym (starts with uppercase), so that brands like "AG1", "Notion", "Beehiiv"
+ * surface correctly in cross-issue brand rollups. Returns null for lowercase
+ * single-word generics like "newsletter".
+ */
+function extractBrand(productName: string): string | null {
+  const words = productName.trim().split(/\s+/);
+  if (words.length === 0) return null;
+  if (words.length === 1) {
+    const word = words[0] ?? "";
+    return /^[A-Z]/.test(word) ? word : null;
+  }
+  return words[0] ?? null;
+}
+
+/**
  * Compute rising / stable / falling product trends across multiple newsletter issues.
  *
  * Classification thresholds:
@@ -520,6 +537,7 @@ export function computeTrends(extractions: ExtractionResult[]): TrendReport {
 
     trends.push({
       name: originalName,
+      brand: extractBrand(originalName),
       category: data.category,
       trend,
       issues_present: data.issues_present,
