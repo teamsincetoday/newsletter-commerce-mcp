@@ -1,0 +1,58 @@
+{
+  "mcp": "newsletter-commerce-mcp",
+  "reports": [
+    {
+      "timestamp": "2026-03-19T16:20:00Z",
+      "eval_mode": "live",
+      "openai_model": "gpt-4o-mini",
+      "cases_passed": 3,
+      "cases_total": 3,
+      "avg_score": 97,
+      "cases": [
+        {
+          "id": "morning-brew-saas-fintech",
+          "name": "Morning Brew — SaaS & Fintech Issue",
+          "score": 98,
+          "passed": true,
+          "products_extracted": 12,
+          "products_expected": 10,
+          "f1": 91,
+          "precision": 83,
+          "recall": 100,
+          "tokens_used": 944
+        },
+        {
+          "id": "tldr-tech-developer-tools",
+          "name": "TLDR Tech — Developer Tools Issue",
+          "score": 95,
+          "passed": true,
+          "products_extracted": 7,
+          "products_expected": 9,
+          "f1": 88,
+          "precision": 100,
+          "recall": 78,
+          "tokens_used": 580
+        },
+        {
+          "id": "milk-road-crypto-defi",
+          "name": "Milk Road — Crypto & DeFi Issue",
+          "score": 97,
+          "passed": true,
+          "products_extracted": 7,
+          "products_expected": 8,
+          "f1": 93,
+          "precision": 100,
+          "recall": 88,
+          "tokens_used": 522
+        }
+      ],
+      "summary": {
+        "avg_f1": 91,
+        "avg_precision": 94,
+        "avg_recall": 89,
+        "avg_products_per_issue": 9,
+        "avg_tokens": 682
+      }
+    }
+  ]
+}
