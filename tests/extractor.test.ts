@@ -630,6 +630,33 @@ describe("extractProducts — graceful fallback", () => {
     expect(result.error).toContain("Network error");
   });
 
+  it("does not retry on timeout error — fails fast to avoid doubling worst-case latency", async () => {
+    // Timeouts are not retried: if LLM API is slow enough to hit 15s threshold,
+    // a retry will also timeout, doubling latency (~20s → ~46s) with no gain.
+    const create = vi.fn()
+      .mockRejectedValueOnce(new Error("Request timed out"));
+    setOpenAIClient({ chat: { completions: { create } } } as unknown as import("openai").default);
+
+    const result = await extractProducts({
+      content: "Some newsletter content",
+      newsletterId: "test-nl-timeout",
+    });
+
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(result.error).toContain("timed out");
+    expect(result.products).toEqual([]);
+  });
+
+  it("does not retry on non-retryable errors (generic network error)", async () => {
+    const create = vi.fn().mockRejectedValue(new Error("Network error"));
+    setOpenAIClient({ chat: { completions: { create } } } as unknown as import("openai").default);
+
+    await extractProducts({ content: "test", newsletterId: "test-nl-no-retry" });
+
+    // Non-retryable error: only 1 attempt, no retry
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+
   it("returns normalized products when OpenAI returns valid JSON", async () => {
     const mockResponse = {
       choices: [
