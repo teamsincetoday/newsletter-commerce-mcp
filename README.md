@@ -112,7 +112,7 @@ Formats extracted products into a ready-to-paste 'Products in This Edition' sect
 
 ## Example Output
 
-Real extraction from a TLDR Tech newsletter (eval score: **F1=1.00**, $0.00051/call, 7390ms):
+Real extraction from a TLDR Tech newsletter (live eval: **F1=88%**, 95/100 score, $0.00051/call, 7390ms):
 
 ```json
 {
