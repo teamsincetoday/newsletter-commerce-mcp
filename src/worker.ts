@@ -665,7 +665,7 @@ function getExamplesResponse() {
     examples: [
       {
         tool: "extract_newsletter_products",
-        description: "Extract product mentions, recommendations, and affiliate links from a newsletter. Supports HTML (Substack, Ghost, Beehiiv) and plain text. Returns product names, categories, recommendation strength, affiliate links, and whether each product appears in a sponsored section.",
+        description: "Extract product mentions, recommendations, and affiliate links from a newsletter. Supports HTML (Substack, Ghost, Beehiiv) and plain text. Returns product name, category, recommendation_strength, affiliate_link, brand (null for generics), aestheticTags (warmth/density/origin/tradition), and is_sponsored flag per product.",
         input: {
           content: "**This week's tools** — I've been running my entire writing workflow through Notion AI for three months now. Genuinely the best $10/month I spend... [SPONSOR] Today's issue is brought to you by Beehiiv — the newsletter platform built for growth. Start free at beehiiv.com/growth... Back to tools: I finally switched to Linear for project management. No affiliate link, just a real recommendation. The Kanban view alone is worth it...",
           newsletter_id: "swipe-file-issue-47",
@@ -699,7 +699,7 @@ function getExamplesResponse() {
       },
       {
         tool: "analyze_newsletter_sponsors",
-        description: "Score sponsor sections from a cached newsletter extraction. Returns CPM benchmark, read-through estimate, sponsor fit score, and CTA effectiveness per sponsor. Uses cached data — no AI cost. Call after extract_newsletter_products.",
+        description: "Score sponsor sections from a cached newsletter extraction. Per-sponsor: CPM benchmark, read-through, sponsor_fit_score, CTA effectiveness. Top-level aggregates: sponsor_count, avg_read_through, avg_sponsor_fit_score, cta_rate. No AI cost. Call after extract_newsletter_products.",
         input: { newsletter_id: "swipe-file-issue-47" },
         output: {
           newsletter_id: "swipe-file-issue-47",
@@ -710,7 +710,7 @@ function getExamplesResponse() {
       },
       {
         tool: "track_product_trends",
-        description: "Identify rising and falling product trends across newsletter issues. Shows mention velocity, trend direction (hot/rising/stable/fading), and issue count. Reads from cached extractions — no re-processing cost.",
+        description: "Identify rising and falling product trends across newsletter issues. Per trend: trend direction (rising/stable/falling), issues_present, total_mentions, avg_recommendation_strength (0–3 scale). Top-level: top_category (dominant category this period). Reads from cached extractions — no re-processing cost.",
         input: { publication_id: "swipe-file", weeks: 12 },
         output: {
           publication_id: "swipe-file",
