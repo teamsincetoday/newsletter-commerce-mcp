@@ -254,13 +254,20 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
         .describe(
           "Optional list of categories to include: saas, physical_goods, course, supplement, book, service, media, other"
         ),
+      include_aesthetic_tags: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe(
+          "When true, includes aestheticTags (warmth/density/origin/tradition) per product. Adds ~20 tokens per product. Default: false.",
+        ),
       api_key: z
         .string()
         .max(API_KEY_MAX_CHARS)
         .optional()
         .describe("Optional API key for paid access beyond the free tier"),
     },
-    async ({ content, newsletter_id, category_filter, api_key }) => {
+    async ({ content, newsletter_id, category_filter, include_aesthetic_tags, api_key }) => {
       const start = Date.now();
       const newsletterId = newsletter_id ?? randomUUID();
 
@@ -293,6 +300,7 @@ function createMcpServer(env: Env, request: Request, ctx: ExecutionContext): Mcp
           content,
           newsletterId,
           categoryFilter: category_filter,
+          includeAesthetic: include_aesthetic_tags,
         });
         const result: ExtractionResult = {
           newsletter_id: extracted.newsletter_id,

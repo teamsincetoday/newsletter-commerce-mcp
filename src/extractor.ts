@@ -122,7 +122,16 @@ export function isHtml(content: string): boolean {
 // SYSTEM PROMPT
 // ============================================================================
 
-const EXTRACTION_SYSTEM_PROMPT = `You are a product and brand intelligence extractor specialized in newsletters (Substack, Ghost, Beehiiv, email HTML).
+export function buildExtractionPrompt(includeAesthetic: boolean): string {
+  const aestheticBlock = includeAesthetic ? `
+For each product, also classify aesthetic character:
+- aesthetic_warmth: "warm" (cozy, earthy, comfort-focused), "cool" (clean, clinical, tech-forward), or "neutral"
+- aesthetic_density: "minimal" (simple, essential, pared back), "maximal" (rich, complex, indulgent), or "balanced"
+- aesthetic_origin: "natural" (organic, artisan, plant-based), "synthetic" (engineered, tech, processed), or "mixed"
+- aesthetic_tradition: "traditional" (heritage, classic, time-tested), "contemporary" (trending, innovative, modern), or "hybrid"
+` : "";
+
+  return `You are a product and brand intelligence extractor specialized in newsletters (Substack, Ghost, Beehiiv, email HTML).
 
 Extract all product, brand, and service mentions from the provided newsletter content.
 
@@ -146,13 +155,7 @@ Also identify sponsor sections:
 - estimated_read_through: 0.0-1.0 (0=skippable ad, 1=highly engaging native content)
 - call_to_action: URL, promo code, or CTA text, or null
 - sponsor_fit_score: 0.0-1.0 — how well the sponsor fits the newsletter's apparent audience
-
-For each product, also classify aesthetic character:
-- aesthetic_warmth: "warm" (cozy, earthy, comfort-focused), "cool" (clean, clinical, tech-forward), or "neutral"
-- aesthetic_density: "minimal" (simple, essential, pared back), "maximal" (rich, complex, indulgent), or "balanced"
-- aesthetic_origin: "natural" (organic, artisan, plant-based), "synthetic" (engineered, tech, processed), or "mixed"
-- aesthetic_tradition: "traditional" (heritage, classic, time-tested), "contemporary" (trending, innovative, modern), or "hybrid"
-
+${aestheticBlock}
 Rules:
 - Only include products with confidence >= 0.4
 - Deduplicate the same product (merge repeated mentions, use highest confidence)
@@ -161,6 +164,7 @@ Rules:
 
 Return ONLY valid JSON (no markdown, no explanation):
 {"products":[...],"sponsor_sections":[...]}`;
+}
 
 // ============================================================================
 // NORMALIZE HELPERS
@@ -173,6 +177,7 @@ Return ONLY valid JSON (no markdown, no explanation):
  */
 export function normalizeProducts(
   raw: OpenAINewsletterResponse["products"],
+  includeAesthetic = false,
 ): ProductMention[] {
   const productMap = new Map<string, ProductMention>();
 
@@ -221,8 +226,10 @@ export function normalizeProducts(
         is_sponsored: Boolean(p.is_sponsored),
       };
 
-      const tags = parseAestheticTags(p);
-      if (tags) entry.aestheticTags = tags;
+      if (includeAesthetic) {
+        const tags = parseAestheticTags(p);
+        if (tags) entry.aestheticTags = tags;
+      }
 
       productMap.set(key, entry);
     }
@@ -315,6 +322,7 @@ export interface ExtractProductsParams {
   content: string;             // HTML or plain text newsletter content
   newsletterId: string;
   categoryFilter?: string[] | null;
+  includeAesthetic?: boolean;
 }
 
 export interface RawExtractionResult {
@@ -333,10 +341,14 @@ export interface RawExtractionResult {
 export async function extractProducts(
   params: ExtractProductsParams,
 ): Promise<RawExtractionResult & { error?: string }> {
-  const { content, newsletterId, categoryFilter } = params;
+  const { content, newsletterId, categoryFilter, includeAesthetic } = params;
 
   // Strip HTML if needed, keeping structure
   const text = isHtml(content) ? stripHtml(content) : content.trim();
+
+  // Debug: log input size to correlate with timeout events
+  const estimatedInputTokens = Math.ceil((buildExtractionPrompt(false).length + text.length) / 4);
+  console.log(`[newsletter-extract] chars=${text.length} est_tokens=${estimatedInputTokens}`);
 
   let client: OpenAI;
   try {
@@ -363,32 +375,66 @@ export async function extractProducts(
     }
   }
 
+  // TIMEOUT_MS: 25s total budget for the entire extraction (including any retry).
+  // Promise.race is used instead of the OpenAI SDK `timeout` option because
+  // AbortSignal.timeout() is not reliably supported in Cloudflare Workers.
+  // Fix for: newsletter 46s timeout pattern (2026-03-19, 2026-03-26 × 2).
+  const EXTRACTION_TIMEOUT_MS = 25_000;
+
   let response: OpenAI.Chat.Completions.ChatCompletion | undefined;
   let extractionError: unknown;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      response = await client.chat.completions.create({
-        model: OPENAI_MODEL,
-        messages: [
-          { role: "system", content: EXTRACTION_SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0,
-        max_tokens: 2000,
-        stream: false,
-      });
-      extractionError = undefined;
-      break;
-    } catch (err) {
-      extractionError = err;
-      if (attempt < MAX_RETRIES && isRetryableError(err)) {
-        await sleep(RETRY_DELAY_MS);
-      } else {
+
+  const attemptExtraction = async (): Promise<void> => {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        response = await client.chat.completions.create({
+          model: OPENAI_MODEL,
+          messages: [
+            { role: "system", content: buildExtractionPrompt(includeAesthetic ?? false) },
+            { role: "user", content: userMessage },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0,
+          max_tokens: 2000,
+          stream: false,
+        });
+        extractionError = undefined;
         break;
+      } catch (err) {
+        extractionError = err;
+        if (attempt < MAX_RETRIES && isRetryableError(err)) {
+          await sleep(RETRY_DELAY_MS);
+        } else {
+          break;
+        }
       }
     }
+  };
+
+  try {
+    await Promise.race([
+      attemptExtraction(),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`extraction_timeout_${EXTRACTION_TIMEOUT_MS}ms`)),
+          EXTRACTION_TIMEOUT_MS,
+        ),
+      ),
+    ]);
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("extraction_timeout")) {
+      return {
+        newsletter_id: newsletterId,
+        products: [],
+        sponsor_sections: [],
+        ai_cost_usd: 0,
+        error: err.message,
+      };
+    }
+    // Non-timeout error — fall through to existing empty-fallback below
+    extractionError = err;
   }
+
   if (!response) {
     // Graceful fallback — return empty result rather than crashing
     return {
@@ -417,7 +463,7 @@ export async function extractProducts(
     : [];
 
   // Normalize
-  let products = normalizeProducts(rawProducts);
+  let products = normalizeProducts(rawProducts, includeAesthetic ?? false);
   const sponsor_sections = normalizeSponsorSections(rawSponsors);
 
   // Apply category filter after normalization if provided

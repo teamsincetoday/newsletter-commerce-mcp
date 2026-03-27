@@ -15,6 +15,7 @@ import {
   computeTrends,
   setOpenAIClient,
   extractProducts,
+  buildExtractionPrompt,
 } from "../src/extractor.js";
 import type { ExtractionResult } from "../src/types.js";
 
@@ -254,8 +255,31 @@ describe("normalizeProducts", () => {
     expect(result[0]?.mention_context.length).toBe(100);
   });
 
-  // EXP-2026-03-11-3: aesthetic tags coverage
-  it("attaches aestheticTags when all four aesthetic fields are valid", () => {
+  // EXP-2026-03-11-3 close-out: aestheticTags opt-in flag
+  it("attaches aestheticTags when includeAesthetic=true and all four fields are valid", () => {
+    const result = normalizeProducts([
+      {
+        name: "Notion",
+        category: "saas",
+        mention_context: "Notion keeps me organized",
+        recommendation_strength: "endorsed",
+        affiliate_link: null,
+        confidence: 0.88,
+        is_sponsored: false,
+        aesthetic_warmth: "cool",
+        aesthetic_density: "minimal",
+        aesthetic_origin: "synthetic",
+        aesthetic_tradition: "contemporary",
+      },
+    ], true);
+    expect(result[0]?.aestheticTags).toBeDefined();
+    expect(result[0]?.aestheticTags?.warmth).toBe("cool");
+    expect(result[0]?.aestheticTags?.density).toBe("minimal");
+    expect(result[0]?.aestheticTags?.origin).toBe("synthetic");
+    expect(result[0]?.aestheticTags?.tradition).toBe("contemporary");
+  });
+
+  it("omits aestheticTags when includeAesthetic=false (default) even if fields present", () => {
     const result = normalizeProducts([
       {
         name: "Notion",
@@ -271,11 +295,7 @@ describe("normalizeProducts", () => {
         aesthetic_tradition: "contemporary",
       },
     ]);
-    expect(result[0]?.aestheticTags).toBeDefined();
-    expect(result[0]?.aestheticTags?.warmth).toBe("cool");
-    expect(result[0]?.aestheticTags?.density).toBe("minimal");
-    expect(result[0]?.aestheticTags?.origin).toBe("synthetic");
-    expect(result[0]?.aestheticTags?.tradition).toBe("contemporary");
+    expect(result[0]?.aestheticTags).toBeUndefined();
   });
 
   it("omits aestheticTags when all aesthetic fields are absent", () => {
@@ -291,6 +311,28 @@ describe("normalizeProducts", () => {
       },
     ]);
     expect(result[0]?.aestheticTags).toBeUndefined();
+  });
+});
+
+// ============================================================================
+// buildExtractionPrompt
+// ============================================================================
+
+describe("buildExtractionPrompt", () => {
+  it("excludes aesthetic instructions when includeAesthetic=false", () => {
+    const prompt = buildExtractionPrompt(false);
+    expect(prompt).not.toContain("aesthetic_warmth");
+    expect(prompt).not.toContain("aesthetic_density");
+    expect(prompt).not.toContain("aesthetic_origin");
+    expect(prompt).not.toContain("aesthetic_tradition");
+  });
+
+  it("includes all 4 aesthetic axes when includeAesthetic=true", () => {
+    const prompt = buildExtractionPrompt(true);
+    expect(prompt).toContain("aesthetic_warmth");
+    expect(prompt).toContain("aesthetic_density");
+    expect(prompt).toContain("aesthetic_origin");
+    expect(prompt).toContain("aesthetic_tradition");
   });
 });
 
@@ -781,4 +823,28 @@ describe("extractProducts — graceful fallback", () => {
     expect(result.products).toHaveLength(1);
     expect(result.products[0]?.name).toBe("SaaS Tool");
   });
+
+  it("returns timeout error when extraction exceeds 25s budget", async () => {
+    // Mock OpenAI to hang indefinitely (simulates slow response on high-load days)
+    const mockClient = {
+      chat: {
+        completions: {
+          create: vi.fn().mockImplementation(
+            () => new Promise((_resolve) => setTimeout(_resolve, 30_000)),
+          ),
+        },
+      },
+    };
+    setOpenAIClient(mockClient as unknown as import("openai").default);
+
+    const result = await extractProducts({
+      content: "Some newsletter content",
+      newsletterId: "test-timeout",
+    });
+
+    expect(result.products).toHaveLength(0);
+    expect(result.sponsor_sections).toHaveLength(0);
+    expect(result.ai_cost_usd).toBe(0);
+    expect(result.error).toMatch(/extraction_timeout/);
+  }, 30_000); // vitest timeout > 25s for this test
 });
