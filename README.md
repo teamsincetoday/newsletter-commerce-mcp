@@ -1,5 +1,15 @@
 # Newsletter Commerce Intelligence MCP
 
+[![npm](https://img.shields.io/npm/v/newsletter-commerce-mcp)](https://www.npmjs.com/package/newsletter-commerce-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/teamsincetoday/newsletter-commerce-mcp?style=social)](https://github.com/teamsincetoday/newsletter-commerce-mcp)
+
+**Turn newsletters into affiliate revenue.** Extract sponsored products, brand mentions, and affiliate signals from any Substack, Ghost, or Beehiiv issue. Then auto-generate a shoppable "Products in this edition" section ready to paste into your newsletter. F1=88% extraction accuracy. Free tier: 200 calls/day.
+
+⭐ **If this saves you time, please star the repo** — it helps other developers find it.
+
+> **Live endpoint**: `https://newsletter-commerce-mcp.sincetoday.workers.dev/mcp` · [See examples](https://newsletter-commerce-mcp.sincetoday.workers.dev/examples)
+
 Extract product mentions, score sponsors, and track affiliate trends from newsletters. Supports Substack, Ghost, Beehiiv, and plain text. Built for the agent-to-agent economy.
 
 ## Tools
