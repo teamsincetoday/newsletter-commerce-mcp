@@ -10,7 +10,7 @@
 
 > **Live endpoint**: `https://newsletter-commerce-mcp.sincetoday.workers.dev/mcp` · [See examples](https://newsletter-commerce-mcp.sincetoday.workers.dev/examples)
 
-Extract product mentions, score sponsors, and track affiliate trends from newsletters. Supports Substack, Ghost, Beehiiv, and plain text. Built for the agent-to-agent economy.
+Extract product mentions, score sponsors, and track affiliate trends from newsletters. Supports Substack, Ghost, Beehiiv, and plain text. Built on x402, the open payment standard backed by Shopify, Google, Microsoft, Visa, and the Linux Foundation.
 
 ## Tools
 
